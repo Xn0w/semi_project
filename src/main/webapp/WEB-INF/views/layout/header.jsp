@@ -8,7 +8,9 @@
    pageContext.setAttribute("contextPath", request.getContextPath());
    
 %>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+<c:set var="contextPath" value="${pageContext.request.contextPath}" />
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,8 +43,16 @@
     li{
        display : flex;
     }
-    .login{
-      float: : right;
+    
+    /*
+    .info{
+       text-align: right;
+    }
+    */
+    
+    
+ .userName_area{
+       text-align: right;
     }
    
 </style>
@@ -53,10 +63,18 @@
 <script src="${contextPath}/resources/summernote-0.8.18-dist/lang/summernote-ko-KR.min.js"></script>
 <link rel="stylesheet" href="${contextPath}/resources/summernote-0.8.18-dist/summernote-lite.css">
 </head>
-<body></body>
-   <span class="login">
-      <a href="${contextPath}/user/login/form">Login</a>
-   </span>
+
+      <c:if test="${loginUser == null}">
+      <div>
+         <a href="${contextPath}/user/login/form">Login</a>
+      </div>
+      </c:if>
+      <c:if test="${loginUser ne null}">
+      <div class="userName_area" style="text-align: right;  margin-right:20px;" >   
+         ${loginUser.name}님 환영합니다.  &nbsp;&nbsp; Point : ${loginUser.point}      
+      </div>
+      </c:if>
+   
    <div class="page-title">
         <div class="container">
             <h1>1조 세미</h1>
@@ -69,7 +87,7 @@
             <li><a class="board_link" href="${contextPath}/upload/list">업로드게시판</a></li>
          </ul>
 
-
+   
 
    
 
