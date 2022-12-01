@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	
+	<typeAliases>
+	
+		<!-- 자유게시판 -->
+		<typeAlias type="com.gdu.semi.domain.board.BoardDTO" alias="BoardDTO"/>
+		
+		<!-- 갤러리 게시판 -->
+		<typeAlias type="com.gdu.semi.domain.gallery.GalCmtDTO" alias="GalCmtDTO"/>
+		<typeAlias type="com.gdu.semi.domain.gallery.GalleryDTO" alias="GalleryDTO"/>
+		<typeAlias type="com.gdu.semi.domain.gallery.LikedDTO" alias="LikedDTO"/>
+		
+		<!-- 회원가입 -->
+		<typeAlias type="com.gdu.semi.domain.user.RetireUserDTO" alias="RetireUserDTO"/>
+		<typeAlias type="com.gdu.semi.domain.user.SleepUserDTO" alias="SleepUserDTO"/>
+		<typeAlias type="com.gdu.semi.domain.user.UserDTO" alias="UserDTO"/>
+		
+		<!-- 업로드 -->
+		<typeAlias type="com.gdu.semi.domain.upload.AttachDTO" alias="AttachDTO"/>
+		<typeAlias type="com.gdu.semi.domain.upload.UploadDTO" alias="UploadDTO"/>	
+	</typeAliases>
+
+</configuration>

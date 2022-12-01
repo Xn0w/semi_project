@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+
+
+
+<mapper namespace="com.gdu.semi.mapper.UploadMapper">
+
+<!-- 	<select id="selectUploadList" resultType="UploadDTO">
+		SELECT U.UP_NO, U.ID, U.UP_TITLE, U.UP_CONTENT, UP_HIT, U.UP_CREATE_DATE, U.UP_MODIFY_DATE,(SELECT COUNT(*) FROM ATTACH A WHERE U.UP_NO = A.UP_NO) AS ATTACH_CNT , R.NAME, R.POINT
+		  FROM UPLOAD U INNER JOIN USERS R
+		    ON U.ID = R.ID
+	</select> -->
+	
+	<select id="selectAllUploadCount" resultType="int"> 
+		SELECT COUNT(*)
+		  FROM UPLOAD  
+	</select>
+	
+	<!--  
+	<select id="selectUploadList" parameterType="Map" resultType="UploadDTO">
+		SELECT U.RN, U.UP_NO, U.ID, U.UP_TITLE, U.UP_CONTENT, UP_HIT, U.UP_CREATE_DATE, U.UP_MODIFY_DATE,(SELECT COUNT(*) FROM ATTACH A WHERE U.UP_NO = A.UP_NO) AS ATTACH_CNT
+		  FROM (SELECT ROW_NUMBER() OVER(ORDER BY UP_CREATE_DATE DESC) AS RN, UP_NO, ID, UP_TITLE, UP_CONTENT, UP_CREATE_DATE, UP_MODIFY_DATE, UP_HIT, UP_IP
+		          FROM UPLOAD) U
+		 WHERE U.RN BETWEEN #{begin} AND #{end}      
+	</select> -->
+	
+	
+	<select id="selectUploadList" parameterType="Map" resultType="UploadDTO">
+		SELECT P.ROW_NUM, P.UP_NO, P.ID, P.UP_TITLE, P.UP_CONTENT, P.UP_HIT, P.UP_CREATE_DATE, P.UP_MODIFY_DATE,(SELECT COUNT(*) FROM ATTACH A WHERE P.UP_NO = A.UP_NO) AS ATTACH_CNT, P.NAME
+		  FROM (SELECT ROW_NUMBER() OVER(ORDER BY U.UP_CREATE_DATE DESC) AS ROW_NUM, U.UP_NO, U.ID, U.UP_TITLE, U.UP_CONTENT, U.UP_HIT, U.UP_CREATE_DATE, U.UP_MODIFY_DATE, R.NAME
+		          FROM UPLOAD U INNER JOIN USERS R
+		            ON U.ID = R.ID) P
+		 WHERE P.ROW_NUM BETWEEN #{begin} AND #{end}      
+	</select> 
+	
+	<insert id="insertUpload" parameterType="UploadDTO">
+		<selectKey keyProperty="upNo" resultType="int" order="BEFORE">
+			SELECT UPLOAD_SEQ.NEXTVAL
+			  FROM DUAL
+		</selectKey>
+		INSERT INTO UPLOAD
+			(UP_NO, ID, UP_TITLE, UP_CONTENT, UP_CREATE_DATE, UP_MODIFY_DATE, UP_HIT, UP_IP)
+	    VALUES		 
+			(#{upNo}, #{id}, #{upTitle}, #{upContent}, SYSTIMESTAMP, SYSTIMESTAMP, 0, #{upIp})
+	</insert>
+	
+	<insert id="insertAttach" parameterType="AttachDTO">
+		INSERT INTO ATTACH
+			(ATTACH_NO, PATH, ORIGIN, FILESYSTEM, DOWNLOAD_CNT, UP_NO)
+		VALUES
+			(ATTACH_SEQ.NEXTVAL, #{path}, #{origin}, #{filesystem}, 0, #{upNo})	
+	</insert>
+	
+
+	<update id="updateHit" parameterType="int">
+		UPDATE UPLOAD
+		   SET UP_HIT = UP_HIT + 1
+		 WHERE UP_NO = #{upNo}   
+	</update>
+	
+	<select id="selectUploadByNo" parameterType="int" resultType="UploadDTO">
+		SELECT UP_NO, ID, UP_TITLE, UP_CONTENT, UP_CREATE_DATE, UP_MODIFY_DATE, UP_HIT, UP_IP
+		  FROM UPLOAD
+		 WHERE UP_NO = #{upNo}  
+	</select>
+	
+	<select id="selectAttachByNo" parameterType="int" resultType="AttachDTO">
+		SELECT ATTACH_NO, PATH, ORIGIN, FILESYSTEM, DOWNLOAD_CNT, UP_NO
+		  FROM ATTACH
+		 WHERE ATTACH_NO = #{attachNo}
+	</select>
+	
+	<select id="selectAttachList" parameterType="int" resultType="AttachDTO">
+		SELECT ATTACH_NO, PATH, ORIGIN, FILESYSTEM, DOWNLOAD_CNT, UP_NO
+		  FROM ATTACH
+		 WHERE UP_NO = #{upNo}  
+	</select>
+	
+	<delete id="deleteUpload" parameterType="int">
+		DELETE 
+		  FROM UPLOAD
+		 WHERE UP_NO = #{upNo} 
+	</delete>
+	
+	<delete id="deleteAttach" parameterType="int">
+		DELETE
+		  FROM ATTACH
+		 WHERE ATTACH_NO = #{attachNo}
+	</delete>
+	
+	<update id="updateUpload" parameterType="UploadDTO">
+		UPDATE UPLOAD
+		   SET UP_TITLE = #{upTitle}
+		   	 , UP_CONTENT = #{upContent}
+		   	 , UP_MODIFY_DATE = SYSTIMESTAMP
+		WHERE UP_NO = #{upNo}
+	</update>
+	
+	<update id="updateDownloadCnt" parameterType="int">
+		UPDATE ATTACH 
+		   SET DOWNLOAD_CNT = DOWNLOAD_CNT +1
+		 WHERE ATTACH_NO = #{attachNo}  
+	</update>
+	
+	<update id="updatePoint" parameterType="String">
+		UPDATE USERS 
+		   SET POINT = POINT + 50
+		 WHERE ID = #{id}
+	</update>
+	
+	<update id="downloadPoint" parameterType="String">
+		UPDATE USERS
+		   SET POINT = POINT - 30
+		 WHERE ID = #{id}  
+	</update>
+	
+	
+</mapper>

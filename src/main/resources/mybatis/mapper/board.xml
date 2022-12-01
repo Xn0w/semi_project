@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.semi.mapper.BoardMapper">
+
+	<!-- 아이디 중복체크1, 이메일 중복체크, 로그인, 로그인 유지를 이용한 로그인, 마이페이지 가기 전 비번 확인  -->
+   <select id="selectUserByMap" parameterType="Map" resultType="UserDTO">
+      SELECT USER_NO, ID, PW, NAME, GENDER, EMAIL, MOBILE, BIRTHYEAR, BIRTHDAY, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, EXTRA_ADDRESS, POINT, AGREE_CODE, SNS_TYPE, JOIN_DATE, PW_MODIFY_DATE, INFO_MODIFY_DATE, SESSION_ID, SESSION_LIMIT_DATE
+        FROM USERS
+    <where> <!-- if 태그를 썼기때문에 AND나 OR이 먼저나오면, 알아서 무시한다. -->
+      <if test="id != null">
+         ID = #{id}
+      </if>
+      <if test="pw != null">
+         AND PW = #{pw}   
+      </if>
+      <if test="email != null">
+         AND Email = #{email}
+      </if>
+      <if test="sessionId != null">
+         AND SESSION_ID = #{sessionId}
+         AND SESSION_LIMIT_DATE > SYSDATE
+      </if>
+    </where>
+   </select>   
+	
+	<select id="selectAllBoardCnt" resultType="int">
+		SELECT COUNT(*)
+		  FROM BOARD
+	</select>
+	
+	<select id="selectBoardByNo" parameterType="int" resultType="BoardDTO">
+		SELECT BD_NO, BD_TITLE, BD_CONTENT, BD_CONTENT, BD_CREATE_DATE, BD_MODIFY_DATE, BD_STATE, BD_DEPTH, BD_GROUP_NO, BD_GROUP_ORDER, BD_IP
+		  FROM BOARD
+		 WHERE BD_NO = #{bdNo}
+	</select>
+	
+	
+	<select id="selectAllList" parameterType="Map" resultType="BoardDTO">
+		SELECT A.RW, A.BD_NO, A.ID, A.BD_TITLE, A.BD_CONTENT, A.BD_CREATE_DATE, A.BD_MODIFY_DATE, A.BD_STATE, A.BD_DEPTH, A.BD_GROUP_NO, A.BD_GROUP_ORDER, A.BD_IP
+		  FROM (SELECT ROW_NUMBER() OVER(ORDER BY BD_GROUP_NO DESC, BD_GROUP_ORDER ASC) AS RW, BD_NO, ID, BD_TITLE, BD_CONTENT, BD_CREATE_DATE, BD_MODIFY_DATE, BD_STATE, BD_DEPTH, BD_GROUP_NO, BD_GROUP_ORDER, BD_IP
+			  	  FROM BOARD) A
+		 WHERE A.RW BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<insert id="insertBoard" parameterType="BoardDTO">
+		INSERT INTO BOARD
+				(BD_NO, ID, BD_TITLE, BD_CONTENT, BD_CREATE_DATE, BD_MODIFY_DATE, BD_STATE, BD_DEPTH, BD_GROUP_NO, BD_GROUP_ORDER, BD_IP)
+			VALUES
+				(BD_SEQ.NEXTVAL, #{id}, #{bdTitle}, #{bdContent}, SYSTIMESTAMP, SYSTIMESTAMP, 1, 0, BD_SEQ.CURRVAL, 0, #{bdIp})
+	</insert>
+	
+	<!-- 원글 수정 -->
+	<update id="updateBoardByNo" parameterType="BoardDTO">
+		UPDATE BOARD
+		   SET BD_TITLE = #{bdTitle}, BD_CONTENT = #{bdContent}
+		 WHERE BD_NO = #{bdNo}
+	</update>
+	
+	<!-- 원글 삭제 -->
+	<update id="deleteBoardByNo" parameterType="BoardDTO">
+		UPDATE BOARD
+		   SET BD_STATE = 0
+		 WHERE BD_NO = #{bdNo}
+	</update>
+	
+	<!-- 답글 삽입 -->
+	<insert id="insertReply" parameterType="BoardDTO">
+		INSERT INTO BOARD
+				(BD_NO, ID, BD_TITLE, BD_CONTENT, BD_CREATE_DATE, BD_MODIFY_DATE, BD_STATE, BD_DEPTH, BD_GROUP_NO, BD_GROUP_ORDER, BD_IP)
+			VALUES
+				(BD_SEQ.NEXTVAL, #{id}, #{bdTitle}, #{bdContent}, SYSTIMESTAMP, SYSTIMESTAMP, 1, #{bdDepth}, #{bdGroupNo}, #{bdGroupOrder}, #{bdIp})
+	</insert>
+	
+	<update id="updatePrevReply" parameterType="BoardDTO">
+		UPDATE BOARD
+		   SET BD_GROUP_ORDER = BD_GROUP_ORDER + 1
+		 WHERE BD_GROUP_NO = #{bdGroupNo}
+		   AND BD_GROUP_ORDER > #{bdGroupOrder}
+	</update>
+	
+	<!-- 답글 삭제  > update로 해서 삭제버튼 누르면 안보이게 하는 걸로 -->
+	
+	
+	<!-- 글 작성시 포인트 지급 -->
+	<update id="updatePoint" parameterType="String">
+		UPDATE USERS
+		   SET POINT = POINT + 10
+		 WHERE ID = #{id}
+	</update>
+	
+	
+</mapper>
